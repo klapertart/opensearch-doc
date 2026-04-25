@@ -6,6 +6,7 @@ Repositori ini berisi dokumentasi dan rangkuman teknis mengenai implementasi ser
 - [Hot-Cold Architecture & Index Naming Convention](hot-and-cold.md)
 - [Shard and Replica Management](shard-and-replica.md)
 - [Data Architecture: Storage & Search Analytics](data-architecture.md)
+- [Referensi & Sumber](Referensi.md)
 
 ## Deskripsi Singkat
 Dokumentasi di dalam repositori ini mencakup:
@@ -14,6 +15,7 @@ Dokumentasi di dalam repositori ini mencakup:
 3. **Index State Management (ISM):** Bagaimana OpenSearch mengelola siklus hidup data secara otomatis.
 4. **Sharding & Replicas:** Konsep dasar, strategi sizing (10GB-50GB per shard), dan cara kerja replikasi untuk fault tolerance serta performa query.
 5. **Arsitektur Data:** Panduan memilih stack storage (OLTP, OLAP, Log, dsb) dan posisi OpenSearch sebagai layer search/analytics.
+6. **Referensi:** Daftar sumber daya dan dokumentasi eksternal yang digunakan sebagai acuan.
 
 ---
 *Dibuat untuk referensi teknis implementasi OpenSearch.*
