@@ -10,10 +10,8 @@
 |---|---|---|
 | Transaksional (OLTP) | PostgreSQL / MySQL | Elasticsearch / OpenSearch |
 | Log & Event | S3 + Parquet | OpenSearch / ClickHouse |
-| Dokumen / Semi-structured | MongoDB / DynamoDB | OpenSearch / Typesense 
-|
-| Analitik / Warehouse (OLAP) | BigQuery / Snowflake / ClickHouse | 
-Metabase / Grafana / Superset |
+| Dokumen / Semi-structured | MongoDB / DynamoDB | OpenSearch / Typesense|
+| Analitik / Warehouse (OLAP) | BigQuery / Snowflake / ClickHouse | Metabase / Grafana / Superset |
 | Time-Series | TimescaleDB / InfluxDB | Grafana |
 | File & Blob | S3 / GCS | - |
 
@@ -299,20 +297,6 @@ Search & Analytics:
   Tidak perlu search engine khusus
   Metadata file disimpan di PostgreSQL/MongoDB → bisa di-search dari sana
 ```
-
----
-
-## Perbandingan Biaya Storage (Estimasi)
-
-```
-PostgreSQL (self-hosted SSD) : ~$0.10 - $0.20 / GB / bulan
-OpenSearch (hot node SSD)    : ~$0.10 - $0.25 / GB / bulan
-S3 + Parquet                 : ~$0.023 / GB / bulan  ← 10x lebih murah
-ClickHouse (self-hosted HDD) : ~$0.02 - $0.05 / GB / bulan
-```
-
-Untuk data log volume besar jangka panjang, S3 + Parquet adalah pilihan
-paling ekonomis dengan selisih biaya yang sangat signifikan.
 
 ---
 
