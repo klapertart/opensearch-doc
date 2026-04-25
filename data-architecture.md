@@ -4,7 +4,7 @@
 
 ---
 
-## Ringkasan Cepat
+## Ringkasan 
 
 | Jenis Data | Primary Storage | Search & Analytics |
 |---|---|---|
