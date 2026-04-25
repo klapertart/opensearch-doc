@@ -4,20 +4,132 @@
 
 ---
 
+## 1. Data Lake vs Data Warehouse
+
+Dua konsep ini sering tertukar. Penting dipahami dulu sebelum memilih stack.
+
+### Definisi
+
+| | Data Lake | Data Warehouse |
+|---|---|---|
+| **Definisi** | Tempat menyimpan semua data dalam bentuk **raw/mentah** | Tempat menyimpan data yang sudah **terstruktur & siap dianalisis** |
+| **Format data** | Raw: JSON, CSV, Parquet, image, video, log mentah | Terstruktur: tabel dengan schema yang ketat |
+| **Schema** | Schema-on-read (schema ditentukan saat dibaca) | Schema-on-write (schema ditentukan saat disimpan) |
+| **Pengguna** | Data engineer, data scientist | Data analyst, business user |
+| **Query** | Fleksibel, eksplorasi, ML | SQL terstruktur, laporan, dashboard |
+| **Biaya storage** | Sangat murah (S3, GCS) | Lebih mahal (compute + storage) |
+| **Contoh tools** | S3 + Glue, Delta Lake, Apache Iceberg | BigQuery, Snowflake, Redshift, ClickHouse |
+
+---
+
+### Karakteristik Detail
+
+#### Data Lake
+```
+Prinsip: "Simpan dulu, pikirkan struktur belakangan"
+
+Cocok untuk:
+  - Volume data sangat besar dan terus bertambah
+  - Format data beragam (log, JSON, CSV, binary, image)
+  - Kebutuhan analisis belum jelas saat data masuk
+  - Tim data science butuh akses ke raw data untuk ML/AI
+  - Retensi jangka sangat panjang dengan biaya minimal
+
+Contoh use case:
+  - Semua log aplikasi disimpan ke S3 dalam format JSON mentah
+  - Data clickstream dari jutaan user disimpan apa adanya
+  - Data IoT dari ribuan sensor disimpan untuk analisis mendatang
+```
+
+#### Data Warehouse
+```
+Prinsip: "Data sudah bersih, terstruktur, dan siap dipakai"
+
+Cocok untuk:
+  - Analisis bisnis yang sudah jelas kebutuhannya
+  - Query SQL oleh tim non-teknis (analyst, finance, marketing)
+  - Dashboard dan laporan yang butuh konsistensi data
+  - Agregasi cepat atas data yang sudah di-transform
+
+Contoh use case:
+  - Laporan revenue per produk per bulan
+  - Cohort analysis user berdasarkan tanggal registrasi
+  - Dashboard KPI bisnis yang diakses tiap hari
+```
+
+---
+
+### Hubungan Keduanya: Bukan Pilihan, Tapi Lapisan
+
+Di arsitektur modern, Data Lake dan Data Warehouse **tidak saling menggantikan** — keduanya bekerja berlapis:
+
+```
+[Source Systems]
+  App, Server, IoT, API
+        ↓
+   Data Lake (S3 / GCS)        ← simpan semua data raw, murah, jangka panjang
+   (raw zone)
+        ↓
+   ETL / ELT Pipeline           ← bersihkan, transform, strukturkan
+   (dbt, Spark, Glue)
+        ↓
+   Data Warehouse               ← data siap pakai untuk analisis bisnis
+   (BigQuery / Snowflake)
+        ↓
+   BI Tool / Dashboard          ← Metabase, Superset, Looker
+   (business user)
+```
+
+Data Lake adalah **sumber kebenaran mentah**. Data Warehouse adalah **sumber kebenaran terstruktur**.
+
+---
+
+### Konsep Terkait: Data Lakehouse
+
+Perkembangan terbaru menggabungkan keduanya dalam satu sistem — **Data Lakehouse**:
+
+```
+Data Lakehouse = Data Lake (storage murah) + Data Warehouse (query terstruktur)
+
+Tools: Delta Lake, Apache Iceberg, Apache Hudi
+       Databricks, BigQuery (bisa query langsung dari GCS)
+
+Manfaat:
+  - Simpan data raw di S3/GCS (murah)
+  - Query dengan SQL seperti data warehouse (tanpa ETL berat)
+  - Tidak perlu duplikasi data ke dua sistem terpisah
+```
+
+---
+
+### Posisi OpenSearch di Antara Keduanya
+
+```
+Data Lake      → bukan, OpenSearch tidak dirancang untuk raw storage
+Data Warehouse → bukan, OpenSearch tidak support JOIN & agregasi kompleks
+
+OpenSearch adalah:
+  Search & Analytics Layer  ← di atas Data Lake atau Data Warehouse
+                               untuk kebutuhan full-text search
+                               dan observability / log analytics
+```
+
+---
+
 ## Ringkasan 
 
 | Jenis Data | Primary Storage | Search & Analytics |
 |---|---|---|
 | Transaksional (OLTP) | PostgreSQL / MySQL | Elasticsearch / OpenSearch |
 | Log & Event | S3 + Parquet | OpenSearch / ClickHouse |
-| Dokumen / Semi-structured | MongoDB / DynamoDB | OpenSearch / Typesense|
+| Dokumen / Semi-structured | MongoDB / DynamoDB | OpenSearch / Typesense |
 | Analitik / Warehouse (OLAP) | BigQuery / Snowflake / ClickHouse | Metabase / Grafana / Superset |
 | Time-Series | TimescaleDB / InfluxDB | Grafana |
 | File & Blob | S3 / GCS | - |
 
 ---
 
-## 1. Data Transaksional (OLTP)
+## 2. Data Transaksional (OLTP)
 
 ### Karakteristik
 ```
@@ -45,8 +157,7 @@ Primary Storage:
   Aurora       ← managed PostgreSQL/MySQL di AWS
 
 Search & Analytics:
-  OpenSearch / Elasticsearch  ← sync dari PostgreSQL via CDC (Change Data 
-Capture)
+  OpenSearch / Elasticsearch  ← sync dari PostgreSQL via CDC (Change Data Capture)
                                  untuk kebutuhan full-text search
   Metabase / Grafana          ← dashboard & reporting bisnis
 ```
@@ -61,7 +172,7 @@ Capture)
 
 ---
 
-## 2. Data Log & Event (Time-Series, Append-Only)
+## 3. Data Log & Event (Time-Series, Append-Only)
 
 ### Karakteristik
 ```
@@ -95,8 +206,7 @@ Search & Analytics (jangka pendek, 7-90 hari):
   ClickHouse    ← bisa jadi primary sekaligus analytics layer
 
 Transport / Buffer (opsional):
-  Kafka         ← hanya jika volume sangat tinggi atau butuh 
-multi-consumer
+  Kafka         ← hanya jika volume sangat tinggi atau butuh multi-consumer
                    retention Kafka: 1-3 hari saja, bukan long-term storage
   Logstash / Fluentd / Vector  ← pipeline langsung tanpa broker
                                   cocok untuk skala sedang
@@ -129,7 +239,7 @@ OpenSearch       S3 + Parquet
 
 ---
 
-## 3. Data Dokumen / Semi-Structured
+## 4. Data Dokumen / Semi-Structured
 
 ### Karakteristik
 ```
@@ -170,7 +280,7 @@ Search & Analytics:
 
 ---
 
-## 4. Data Analitik / Warehouse (OLAP)
+## 5. Data Analitik / Warehouse (OLAP)
 
 ### Karakteristik
 ```
@@ -201,8 +311,7 @@ Primary Storage (Data Warehouse):
 Search & Analytics / BI Tool:
   Metabase     ← self-hosted BI, mudah dipakai non-technical user
   Superset     ← open source, fleksibel, bisa custom chart
-  Grafana      ← lebih ke metrics & time-series, bisa connect ke 
-warehouse
+  Grafana      ← lebih ke metrics & time-series, bisa connect ke warehouse
   Looker       ← enterprise, mahal tapi powerful
 ```
 
@@ -221,7 +330,7 @@ warehouse
 
 ---
 
-## 5. Data Time-Series (Metrics)
+## 6. Data Time-Series (Metrics)
 
 ### Karakteristik
 ```
@@ -243,16 +352,13 @@ warehouse
 
 ```
 Primary Storage:
-  InfluxDB      ← purpose-built time-series, retention & downsampling 
-bawaan
-  TimescaleDB   ← PostgreSQL extension, familiar bagi yang sudah pakai 
-Postgres
+  InfluxDB      ← purpose-built time-series, retention & downsampling bawaan
+  TimescaleDB   ← PostgreSQL extension, familiar bagi yang sudah pakai Postgres
   Prometheus    ← untuk metrics infrastruktur & aplikasi (pull-based)
   VictoriaMetrics ← alternatif Prometheus, lebih efisien di skala besar
 
 Search & Analytics:
-  Grafana       ← standar industri untuk visualisasi metrics & 
-time-series
+  Grafana       ← standar industri untuk visualisasi metrics & time-series
 ```
 
 ### Arsitektur
@@ -268,7 +374,7 @@ time-series
 
 ---
 
-## 6. Data File & Blob
+## 7. Data File & Blob
 
 ### Karakteristik
 ```
@@ -327,3 +433,6 @@ Tanya dulu:
 > **OpenSearch selalu posisinya sebagai search & analytics layer,
 > bukan primary storage. Data di OpenSearch idealnya adalah salinan
 > atau turunan dari primary storage yang sesungguhnya.**
+
+---
+
