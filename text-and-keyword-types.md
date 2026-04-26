@@ -82,8 +82,7 @@ sort by service_name              ✅
 | **Exact match** | ❌ | ✅ |
 | **Aggregation** | ❌ | ✅ |
 | **Sorting** | ❌ | ✅ |
-| **Contoh field** | message, description, body | status, level, service, 
-host |
+| **Contoh field** | message, description, body | status, level, service, host |
 
 ---
 
@@ -159,14 +158,11 @@ PUT _index_template/logs_template
 |---|---|---|
 | `@timestamp` | date | Range query by waktu |
 | `message` | text | Kalimat bebas, butuh full-text search |
-| `level` | keyword | Nilai enum: ERROR, WARN, INFO — exact match & 
-aggregation |
-| `service` | keyword | Nama service terstruktur — filter & count per 
-service |
+| `level` | keyword | Nilai enum: ERROR, WARN, INFO — exact match & aggregation |
+| `service` | keyword | Nama service terstruktur — filter & count per service |
 | `host` | keyword | Nama server — filter per node |
 | `trace_id` | keyword | ID unik — exact match untuk distributed tracing |
-| `error` | text + keyword | Butuh search pesan error sekaligus 
-aggregation jenis error |
+| `error` | text + keyword | Butuh search pesan error sekaligus aggregation jenis error |
 
 ---
 
@@ -199,8 +195,7 @@ PUT _index_template/logs_template
 
 | Dynamic Setting | Perilaku |
 |---|---|
-| `true` (default) | Field baru otomatis ditambah dengan tipe hasil 
-tebakan |
+| `true` (default) | Field baru otomatis ditambah dengan tipe hasil tebakan |
 | `false` | Field baru diabaikan, tidak diindex |
 | `strict` | Field baru ditolak, throw error |
 
